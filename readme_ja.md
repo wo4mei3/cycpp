@@ -29,3 +29,8 @@ $$\frac{\Gamma\vdash t:^\phi T\quad p\in\phi}{\Gamma\vdash ref\ t \ at \ p:^\phi
 $$\frac{\Gamma\vdash t:^\phi (T\ ref,p)\quad p\in\phi}{\Gamma\vdash !t:^\phi T}\ \hbox{(RT-Deref)}$$
 
 $$\frac{\Gamma\vdash t:^\phi (T\ ref,p)\quad \Gamma\vdash t':^\phi T\quad p\in\phi}{\Gamma\vdash t:=t':^\phi unit}\ \hbox{(RT-Assign)}$$
+
+$$\frac{\displaystyle
+\frac{\displaystyle\frac{\Gamma,x:S(g)= (T\to^{W}U,static)}
+{\Gamma,x:S\vdash g:^{\phi'} (T\to^{W}U,static)}\hbox{(RT-Var)}\quad\frac{\displaystyle\frac{\Gamma,x:S(f)= (S\to^{V}T,static)}{\Gamma,x:S\vdash f:^{\phi'} (S\to^{V}T,static)}\hbox{(RT-Var)}\quad\frac{\Gamma,x:S(x)= S}{\Gamma,x:S\vdash x:^{\phi'}S}\hbox{(RT-Var)}\quad \genfrac{}{}{0pt}{}{}{static\in \phi'\quad W\subseteq\phi'}}{\Gamma,x:S\vdash f x:^{\phi'} T\quad}\hbox{(RT-App)}}
+{\Gamma,x:S\vdash g \ (f\ x):^{\phi'}U}\hbox{(RT-App)}\quad \genfrac{}{}{0pt}{}{}{static\in \phi'\quad W\subseteq\phi'}}{\Gamma\vdash (\lambda x.t)\ at\ static:^\phi (S\to^{\phi'}U,static)}\hbox{(RT-Abs)}$$

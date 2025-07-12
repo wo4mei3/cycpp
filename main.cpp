@@ -20,20 +20,27 @@ template <typename T, region p> struct heap {
     using other = heap<U, p>;
   };
 
-  heap() { mi_heap = mi_heap_new(); }
+  heap() { 
+    owns = true;
+    mi_heap = mi_heap_new();
+  }
   heap(const heap & h) {
-    mi_heap = mi_heap_new();
+    owns = false;
+    mi_heap = h.mi_heap;
   }
-  heap &operator=(const heap &) {
-    mi_heap = mi_heap_new();
+  heap &operator=(const heap &h) {
+    owns = false;
+    mi_heap = h.mi_heap;
   }
-  heap(heap &&) {
-    mi_heap = mi_heap_new();
+  heap(heap &&h) {
+    owns = false;
+    mi_heap = h.mi_heap;
   }
-  heap &operator=(heap &&) {
-    mi_heap = mi_heap_new();
+  heap &operator=(heap &&h) {
+    owns = false;
+    mi_heap = h.mi_heap;
   }
-  ~heap() { mi_heap_destroy(mi_heap); }
+  ~heap() { if (owns) mi_heap_destroy(mi_heap); }
 
   T *allocate(size_t size) {
     return (T *)mi_heap_malloc(mi_heap, sizeof(T) * size);
@@ -48,6 +55,7 @@ template <typename T, region p> struct heap {
 
   void deallocate(T *ptr, size_t size) { mi_free_size(ptr, size); }
 
+  bool owns;
   mi_heap_t *mi_heap;
 };
 
@@ -68,7 +76,7 @@ struct eff {};
 region _static;
 
 template <typename T, region r>
-using vec = std::vector<T, heap<T, r>>;
+using list = std::vector<T, heap<T, r>>;
 
 template <typename Ret, typename Args, region phi>
 struct fun;
@@ -81,8 +89,8 @@ struct fun<Ret(Args...), eff<phi...>, _static> : std::function<Ret(Args...)> {
 
 
 template <typename A, typename B, region p, region q, region... phi>
-vec<B, q> map(fun<B(A), eff<phi...>,_static> fun, vec<A,p> v, heap<B, q>& heap){
-  vec<B,q> vec(heap);
+list<B, q> map(fun<B(A), eff<phi...>,_static> fun, list<A,p> v, heap<B, q>& heap){
+  list<B,q> vec(heap);
   std::for_each(v.cbegin(), v.cend(), [&](const A& a){ vec.push_back(fun(a)); });
   return vec;
 }
@@ -93,7 +101,7 @@ fun<void(), eff<p>, _static> make_incr(ptr<int, p>& x) {
 }
 
 template <typename S, typename T, typename U, region... V, region... W>
-fun<U(S), eff<V..., W...>,_static> compose(fun<T(S), eff<V...>,_static> f, fun<U(T), eff<W...>,_static> g) __attribute__((enable_if((eff<W...>(),1), ""))) {
+fun<U(S), eff<V..., W...>,_static> compose(fun<T(S), eff<V...>,_static> f, fun<U(T), eff<W...>,_static> g) {
   return [&](S x){ return g(f(x)); };
 }
 
@@ -112,12 +120,12 @@ int main() {
   std::cout << f() << std::endl;
     region r;
     heap<int, r> heap;
-    vec<int, r> v(heap);
+    list<int, r> v(heap);
     v.push_back(1);
     v.push_back(2);
     v.push_back(3);
     fun<int(int), eff<r>, _static> h = [](int x){ return x * 2; };
-    vec<int, r> vec = map(h, v, heap);
+    list<int, r> vec = map(h, v, heap);
     std::for_each(vec.cbegin(), vec.cend(), [](int x){ std::cout << x << std::endl; });
     {
       region p;
@@ -133,7 +141,7 @@ int main() {
       region p;
       ::heap<int, p> heap;
       ptr<int, p> x(heap.alloc(1));
-      ::vec<int, p> vec;
+      ::list<int, p> vec;
       fun<int(int), eff<p>, _static> f = [&](int y){ return y + *x; };
       {
         region q;
