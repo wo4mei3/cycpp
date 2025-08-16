@@ -75,6 +75,9 @@ struct eff {};
 
 region _static;
 
+template <typename T>
+heap<T,_static> static_heap;
+
 template <typename T, region r>
 using list = std::vector<T, heap<T, r>>;
 
@@ -115,6 +118,8 @@ void h(fun<int(void), eff<>, _static>& f) {
 } 
 
 int main() { 
+  auto a = static_heap<int>;
+  auto a_ptr = a.alloc(7);
   fun<int(void), eff<>, _static> f;
   h(f);
   std::cout << f() << std::endl;
@@ -162,4 +167,5 @@ int main() {
       }
     }
     std::cout << h(3) << std::endl;
+    std::cout << *a_ptr << std::endl;
 }
