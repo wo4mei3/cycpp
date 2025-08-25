@@ -120,6 +120,8 @@ void h(fun<int(void), eff<>, _static>& f) {
 int main() { 
   auto a = static_heap<int>;
   auto a_ptr = a.alloc(7);
+  auto b = static_heap<bool>;
+  auto b_ptr = a.alloc(true);
   fun<int(void), eff<>, _static> f;
   h(f);
   std::cout << f() << std::endl;
@@ -168,4 +170,5 @@ int main() {
     }
     std::cout << h(3) << std::endl;
     std::cout << *a_ptr << std::endl;
+    std::cout << *b_ptr << std::endl;
 }
